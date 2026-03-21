@@ -20,5 +20,5 @@ Pythonのhttp.serverとcgiで作る備忘メモ
 * www/script/memo.py が備忘メモ本体です。<br>
     www/lib/memo-style.css と www/lib/memo-script.js を利用します。
 
-* 上記の4ファイル以外はおまけです。<br>
+* ファイル構成に示した4ファイル以外はおまけです。<br>
 	CGIの実験で作ったものですが、これらを消してもmemo.pyは動作します。
