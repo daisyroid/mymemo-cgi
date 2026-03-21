@@ -28,4 +28,3 @@ Pythonのhttp.serverとcgiで作る備忘メモ
 
 * 上のファイル構成で(sample)とあるのは実験で作ったファイルです。<br>
     これらを消してもmemo.pyは動作します。
-# mymemo-cgi

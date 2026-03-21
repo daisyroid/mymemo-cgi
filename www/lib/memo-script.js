@@ -1,4 +1,4 @@
-﻿// [コピー]ボタンを押したときの処理
+// [コピー]ボタンを押したときの処理
 function onClick(ev) {
   const div = ev.target.parentElement.parentElement.children[1];
   navigator.clipboard.writeText(div.innerText)
