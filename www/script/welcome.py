@@ -19,6 +19,7 @@ def getConstData():
     my_dir = os.path.dirname(script_name)
     return method, my_name, my_dir
 
+
 METHOD, MY_NAME, MY_DIR = getConstData()
 
 
@@ -27,11 +28,13 @@ COOKIE_DAYS = 30
 COOKIE = http.cookies.SimpleCookie()
 COOKIE.load(os.environ.get("HTTP_COOKIE", ""))
 
+
 def get_cookie(key):
     if key in COOKIE:
         return urllib.parse.unquote(COOKIE[key].value)
     else:
         return ""
+
 
 def set_cookie(key, val, days=COOKIE_DAYS):
     COOKIE[key] = urllib.parse.quote(val)
@@ -41,6 +44,7 @@ def set_cookie(key, val, days=COOKIE_DAYS):
     COOKIE[key]["httponly"] = True
     COOKIE[key]["secure"] = False  # localhostなのでSSLなしを許可
     COOKIE[key]["samesite"] = "Lax"
+
 
 def del_cookie(key):
     set_cookie(key, "", days=-1)
@@ -65,6 +69,7 @@ def getUserName():
         if username != "":
             set_cookie("username", username)
     return username
+
 
 USERNAME = getUserName()
 SAFE_USERNAME = html.escape(USERNAME)

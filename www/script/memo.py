@@ -9,6 +9,59 @@ import sys
 import threading
 import urllib
 
+# ////////////////////////// ユーティリティ
+
+# URLを示す正規表現
+URL_PATTERN = re.compile(r"https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", re.ASCII)
+
+
+# 文字列をURL部分とそうでない部分に分割する
+def split_by_url(text):
+    result = []
+    last_idx = 0
+
+    # finditerでテキスト内のURLを順番に探す
+    for match in re.finditer(URL_PATTERN, text):
+        start, end = match.span()
+
+        # URLの前の「地の文」があれば追加
+        if start > last_idx:
+            result.append((False, text[last_idx:start]))
+
+        # マッチしたURLを追加
+        result.append((True, text[start:end]))
+
+        last_idx = end
+
+    # 最後のURLより後ろに文字があれば追加
+    if last_idx < len(text):
+        result.append((False, text[last_idx:]))
+
+    return result
+
+
+# すべてのURLをリンク化し、全体をHTMLエスケープする
+def linkify_and_escape(text):
+    stack = []
+    for is_url, text_piece in split_by_url(text):
+        if is_url:
+            try:
+                link_text = urllib.parse.unquote(text_piece)
+            except Exception:
+                link_text = text_piece
+            safe_url = html.escape(text_piece)
+            safe_link_text = html.escape(link_text)
+            stack.append(
+                f'<a href="{safe_url}" target="_blank" rel="noreferrer">{safe_link_text}</a>'
+            )
+        else:
+            safe_text = html.escape(text_piece)
+            stack.append(safe_text)
+    return "".join(stack)
+
+
+# ////////////////////////// 処理開始
+
 # stdoutを確実にutf-8にする
 sys.stdout.reconfigure(encoding="utf-8")
 
@@ -38,7 +91,6 @@ def getFormData():
 
 
 QUERY, DEL_ID, TEXT = getFormData()
-
 
 # DBの読み書き
 DB_LOCK = threading.Lock()
@@ -96,58 +148,10 @@ def getPostData():
 POST_DATA, SYSTEM_MESSAGE = getPostData()
 
 
-# URLを示す正規表現
-URL_PATTERN = re.compile(r"https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", re.ASCII)
-
-
-# 文字列をURL部分とそうでない部分に分割する
-def split_by_url(text):
-    result = []
-    last_idx = 0
-
-    # finditerでテキスト内のURLを順番に探す
-    for match in re.finditer(URL_PATTERN, text):
-        start, end = match.span()
-
-        # URLの前の「地の文」があれば追加
-        if start > last_idx:
-            result.append((False, text[last_idx:start]))
-
-        # マッチしたURLを追加
-        result.append((True, text[start:end]))
-
-        last_idx = end
-
-    # 最後のURLより後ろに文字があれば追加
-    if last_idx < len(text):
-        result.append((False, text[last_idx:]))
-
-    return result
-
-
-# すべてのURLをリンク化し、全体をHTMLエスケープする
-def linkify_and_escape(text):
-    stack = []
-    for is_url, text_piece in split_by_url(text):
-        if is_url:
-            try:
-                link_text = urllib.parse.unquote(text_piece)
-            except Exception:
-                link_text = text_piece
-            safe_url = html.escape(text_piece)
-            safe_link_text = html.escape(link_text)
-            stack.append(
-                f'<a href="{safe_url}" target="_blank" rel="noreferrer">{safe_link_text}</a>'
-            )
-        else:
-            safe_text = html.escape(text_piece)
-            stack.append(safe_text)
-    return "".join(stack)
-
-
 # POST_DATAからタイムラインのHTMLを作る
 def makeTimeLine(data):
     timeline = ""
+
     for ID, text, created_at in data:
         safe_text = linkify_and_escape(text)
         timeline += (
@@ -161,11 +165,11 @@ def makeTimeLine(data):
             f'    <div class="text">{safe_text}</div>\n'
             f"  </form>\n"
         )
+
     return timeline
 
 
 TIMELINE = makeTimeLine(POST_DATA)
-
 
 # 検索ワードの有無で検索ボタンを変える
 if QUERY == "":
