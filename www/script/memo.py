@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import cgi
+import datetime
 import html
 import os
 import re
@@ -58,6 +59,13 @@ def linkify_and_escape(text):
             safe_text = html.escape(text_piece)
             stack.append(safe_text)
     return "".join(stack)
+
+
+def getDateTimeStr(created_at):
+    date_str, time_str = created_at.split(' ')
+    wd_names = ["月", "火", "水", "木", "金", "土", "日"]
+    wd_index = datetime.datetime.strptime(date_str, "%Y-%m-%d").weekday()
+    return f"{date_str}({wd_names[wd_index]}) {time_str[:5]}"
 
 
 # ////////////////////////// 処理開始
@@ -154,10 +162,11 @@ def makeTimeLine(data):
 
     for ID, text, created_at in data:
         safe_text = linkify_and_escape(text)
+        datetime_str = getDateTimeStr(created_at)
         timeline += (
             f'  <form class="view" method="post" action="{MY_NAME}">\n'
             f'    <div class="header">\n'
-            f'      <span class="date">{created_at}</span>\n'
+            f'      <span class="date">{datetime_str}</span>\n'
             f'      <input type="hidden" name="del" value="{ID}">\n'
             f'      <button class="del" type="submit">削除</button>\n'
             f'      <button class="copy" type="button">テキストをコピー</button>\n'
