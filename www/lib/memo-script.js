@@ -1,22 +1,42 @@
 // [コピー]ボタンを押したときの処理
 function onClick(ev) {
-  const div = ev.target.parentElement.parentElement.children[1];
-  navigator.clipboard.writeText(div.innerText)
+  // ボタンの親フォームに属するdiv.textが記事本体
+  const div = ev.target.form.querySelector("div.text");
+
+  // HTMLを取得し、自動リンクとHTMLエスケープを解除
+  const r2c = {
+    '&lt;'  : '<',
+    '&gt;'  : '>',
+    '&amp;' : '&',
+    '&quot;': '"',
+  };
+  const raw_text = div.innerHTML
+    .replace(/<a href="([^"]*)"[^>]*>.*?<\/a>/g, '$1')
+    .replace(/&(lt|gt|amp|quot);/g, (m) => r2c[m]);
+
+  // クリップボードにコピーする
+  navigator.clipboard.writeText(raw_text)
     .then(() => {
+      // 成功した場合
+
       // メッセージボックスを作る
       const msgbox = document.createElement('div');
       msgbox.className = 'toast-message';
       msgbox.textContent = 'コピーしました！';
       msgbox.style.left = `${ev.pageX - 100}px`;
       msgbox.style.top = `${ev.pageY - 60}px`;
-      // 表示し、0.8秒後に透明化、その0.2秒後に消滅
+
+      // 表示し、0.7秒後に透明化、その0.3秒後に消滅
       document.body.appendChild(msgbox);
       setTimeout(() => {
         msgbox.style.opacity = '0';
-        setTimeout(() => msgbox.remove(), 200);
-      }, 800);
+        setTimeout(() => msgbox.remove(), 300);
+      }, 700);
     })
-    .catch(err => alert(`コピー失敗: {err}`));
+    .catch(err => {
+      // 失敗した場合
+      alert(`コピー失敗: {err}`);
+    });
 }
 
 // フォームのsubmitイベントの処理

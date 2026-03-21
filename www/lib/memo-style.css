@@ -48,6 +48,7 @@ h1 {
 textarea {
   box-sizing: border-box;
   font-size: 10pt;
+  word-break: break-all;
   color: var(--text-color);
   background-color: var(--paper-color);
   border: 1px solid var(--border-color);
@@ -117,9 +118,11 @@ button:active {
 }
 
 .view div.text {
-  font-size: 10pt;
-  line-height: 133%;
+  font-family: monospace;
+  font-size: 11pt;
+  line-height: 150%;
   white-space: pre-wrap;
+  word-break: break-all;
   padding: 0 4px;
 }
 
@@ -142,7 +145,7 @@ div.toast-message {
   z-index: 1000;
   white-space: nowrap;
   pointer-events: none;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease; /* 0.3秒で消える */
 
   font-size: 15pt;
   color: var(--green-color);

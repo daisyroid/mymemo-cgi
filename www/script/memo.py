@@ -3,6 +3,7 @@
 import cgi
 import html
 import os
+import re
 import sqlite3
 import sys
 import threading
@@ -32,7 +33,7 @@ def getFormData():
     query = form.getfirst("q", "").strip()
     delid = form.getfirst("del", "").strip()
     text = form.getfirst("text", "").strip()
-    text = "\n".join(text.splitlines()) # 改行コードを"\n"に統一
+    text = "\n".join(text.splitlines())  # 改行コードを"\n"に統一
     return query, delid, text
 
 
@@ -95,11 +96,60 @@ def getPostData():
 POST_DATA, SYSTEM_MESSAGE = getPostData()
 
 
+# URLを示す正規表現
+URL_PATTERN = re.compile(r"https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", re.ASCII)
+
+
+# 文字列をURL部分とそうでない部分に分割する
+def split_by_url(text):
+    result = []
+    last_idx = 0
+
+    # finditerでテキスト内のURLを順番に探す
+    for match in re.finditer(URL_PATTERN, text):
+        start, end = match.span()
+
+        # URLの前の「地の文」があれば追加
+        if start > last_idx:
+            result.append((False, text[last_idx:start]))
+
+        # マッチしたURLを追加
+        result.append((True, text[start:end]))
+
+        last_idx = end
+
+    # 最後のURLより後ろに文字があれば追加
+    if last_idx < len(text):
+        result.append((False, text[last_idx:]))
+
+    return result
+
+
+# すべてのURLをリンク化し、全体をHTMLエスケープする
+def linkify_and_escape(text):
+    stack = []
+    for is_url, text_piece in split_by_url(text):
+        if is_url:
+            try:
+                link_text = urllib.parse.unquote(text_piece)
+            except Exception:
+                link_text = text_piece
+            safe_url = html.escape(text_piece)
+            safe_link_text = html.escape(link_text)
+            stack.append(
+                f'<a href="{safe_url}" target="_blank" rel="noreferrer">{safe_link_text}</a>'
+            )
+        else:
+            safe_text = html.escape(text_piece)
+            stack.append(safe_text)
+    return "".join(stack)
+
+
 # POST_DATAからタイムラインのHTMLを作る
 def makeTimeLine(data):
     timeline = ""
     for ID, text, created_at in data:
-        safe_text = html.escape(text)
+        safe_text = linkify_and_escape(text)
         timeline += (
             f'  <form class="view" method="post" action="{MY_NAME}">\n'
             f'    <div class="header">\n'
