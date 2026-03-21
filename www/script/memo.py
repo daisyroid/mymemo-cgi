@@ -61,11 +61,11 @@ def linkify_and_escape(text):
     return "".join(stack)
 
 
+# "YYYY-MM-DD HH:MM:SS" から "YYYY-MM-DD(曜) HH:MM" を得る
 def getDateTimeStr(created_at):
-    date_str, time_str = created_at.split(' ')
-    wd_names = ["月", "火", "水", "木", "金", "土", "日"]
-    wd_index = datetime.datetime.strptime(date_str, "%Y-%m-%d").weekday()
-    return f"{date_str}({wd_names[wd_index]}) {time_str[:5]}"
+    dt = datetime.datetime.strptime(created_at, "%Y-%m-%d %H:%M:%S")
+    wday = ["月", "火", "水", "木", "金", "土", "日"][dt.weekday()]
+    return f"{created_at[0:10]}({wday}) {created_at[11:16]}"
 
 
 # ////////////////////////// 処理開始
