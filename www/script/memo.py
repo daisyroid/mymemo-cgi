@@ -192,7 +192,7 @@ else:
     QUERY_BUTTON = '<button type="submit">検索しなおす</button>'
     QUERY_STATUS = f"  <div>検索結果は{len(POST_DATA)}件です</div>"
 
-# POSTメソッドで、SYSTEM_MESSAGEがない場合はページをリロードする
+# メソッドがPOSTで、SYSTEM_MESSAGEがない場合はページをリロードする
 if METHOD == "POST" and SYSTEM_MESSAGE == "":
     RELOAD_JS = "<script>location.href=location.pathname;</script>"
 else:
