@@ -41,9 +41,10 @@ def split_by_url(text):
     return result
 
 
-# すべてのURLをリンク化し、全体をHTMLエスケープする
-def linkify_and_escape(text):
+# テキスト内のURLをすべてリンク化し、全体をHTMLエスケープする
+def linkifyAndEscape(text):
     stack = []
+
     for is_url, text_piece in split_by_url(text):
         if is_url:
             try:
@@ -58,6 +59,7 @@ def linkify_and_escape(text):
         else:
             safe_text = html.escape(text_piece)
             stack.append(safe_text)
+
     return "".join(stack)
 
 
@@ -161,7 +163,7 @@ def makeTimeLine(data):
     timeline = ""
 
     for ID, text, created_at in data:
-        safe_text = linkify_and_escape(text)
+        safe_text = linkifyAndEscape(text)
         datetime_str = getDateTimeStr(created_at)
         timeline += (
             f'  <form class="view" method="post" action="{MY_NAME}">\n'
