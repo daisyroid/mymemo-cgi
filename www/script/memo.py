@@ -17,7 +17,7 @@ URL_PATTERN = re.compile(r"https?://[\w/:%#\$&\?\(\)~\.=\+\-]+", re.ASCII)
 
 
 # 文字列をURL部分とそうでない部分に分割する
-def split_by_url(text):
+def splitByUrl(text):
     result = []
     last_idx = 0
 
@@ -45,19 +45,19 @@ def split_by_url(text):
 def linkifyAndEscape(text):
     stack = []
 
-    for is_url, text_piece in split_by_url(text):
+    for is_url, text_piece in splitByUrl(text):
         if is_url:
             try:
                 link_text = urllib.parse.unquote(text_piece)
             except Exception:
                 link_text = text_piece
-            safe_url = html.escape(text_piece)
-            safe_link_text = html.escape(link_text)
+            safe_url = html.escape(text_piece) # quote=True
+            safe_link_text = html.escape(link_text, quote=False)
             stack.append(
                 f'<a href="{safe_url}" target="_blank" rel="noreferrer">{safe_link_text}</a>'
             )
         else:
-            safe_text = html.escape(text_piece)
+            safe_text = html.escape(text_piece, quote=False)
             stack.append(safe_text)
 
     return "".join(stack)
@@ -97,6 +97,7 @@ def getFormData():
     delid = form.getfirst("del", "").strip()
     text = form.getfirst("text", "").strip()
     text = "\n".join(text.splitlines())  # 改行コードを"\n"に統一
+
     return query, delid, text
 
 
@@ -182,25 +183,56 @@ def makeTimeLine(data):
 
 TIMELINE = makeTimeLine(POST_DATA)
 
-# 検索ワードの有無で検索ボタンを変える
-if QUERY == "":
-    CLEAR_BUTTON = ""
-    QUERY_BUTTON = '<button type="submit">検索する</button>'
-    QUERY_STATUS = ""
-else:
-    CLEAR_BUTTON = '<button type="button" onclick="location.href=location.pathname;">クリア</button>'
-    QUERY_BUTTON = '<button type="submit">検索しなおす</button>'
-    QUERY_STATUS = f"  <div>検索結果は{len(POST_DATA)}件です</div>"
 
-# メソッドがPOSTで、SYSTEM_MESSAGEがない場合はページをリロードする
-if METHOD == "POST" and SYSTEM_MESSAGE == "":
-    RELOAD_JS = "<script>location.href=location.pathname;</script>"
-else:
-    RELOAD_JS = ""
+# 検索ワードの有無で検索ボタンを変える
+def makeQueryBox():
+    reload_snippet = "location.href=location.pathname;"
+
+    if QUERY == "":
+        c_button = ""
+        q_button = '<button type="submit">検索する</button>'
+        q_status = ""
+
+    else:
+        c_button = f'<button type="button" onclick="{reload_snippet}">クリア</button>'
+        q_button = '<button type="submit">検索しなおす</button>'
+        q_status = f"  <div>検索結果は{len(POST_DATA)}件です</div>"
+
+    return c_button, q_button, q_status
+
+
+CLEAR_BUTTON, QUERY_BUTTON, QUERY_STATUS = makeQueryBox()
+
+
+# POSTメソッドの処理後にページをリロードする仕組み
+def makeReloader():
+    reload_snippet = "location.href=location.pathname;"
+
+    if METHOD == "GET":
+        # GETを処理した場合はリロード不用
+        js = ""
+        button = ""
+
+    elif SYSTEM_MESSAGE == "":
+        # POSTを処理してノーエラーの場合、JavaScriptで強制リロード
+        js = f"<script>{reload_snippet}</script>"
+        button = ""
+
+    else:
+        # POSTを処理してエラーがあった場合、リロードボタンを表示
+        js = ""
+        button = f' <button type="button" onclick="{reload_snippet}">リロード</button>'
+
+    return js, button
+
+
+RELOAD_JS, RELOAD_BUTTON = makeReloader()
+
 
 # 入力されたデータを表示用にエスケープする
 SAFE_QUERY = html.escape(QUERY)
 SAFE_TEXT = html.escape(TEXT)
+
 
 # HTTPレスポンスを出力する
 print(
@@ -221,7 +253,7 @@ Content-Type: text/html; charset=utf-8
   <h1>なんでもメモ</h1>
   <form class="article" method="post" action="{MY_NAME}">
     <textarea name="text" placeholder="投稿文..." required>{SYSTEM_MESSAGE}</textarea>
-    <button type="submit">投稿する</button>
+    <button type="submit">投稿する</button>{RELOAD_BUTTON}
   </form>
   <form class="search" method="get" action="{MY_NAME}">
     <input type="text" name="q" placeholder="検索ワード..." required value="{SAFE_QUERY}">

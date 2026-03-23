@@ -3,7 +3,7 @@
 http.serverとcgiで作った「なんでもメモ」CGIスクリプト
 
 ## ファイル構成
-* [cgi-server.py](cgi-srver.py) -- Webサーバー
+* [cgi-server.py](./cgi-srver.py) -- Webサーバー
 * www/
   * script/
     * [memo.py](www/script/memo.py) -- なんでもメモ
