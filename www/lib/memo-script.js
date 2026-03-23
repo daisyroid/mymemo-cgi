@@ -8,11 +8,10 @@ function onClick(ev) {
     '&lt;'  : '<',
     '&gt;'  : '>',
     '&amp;' : '&',
-    '&quot;': '"',
   };
   const raw_text = div.innerHTML
     .replace(/<a href="([^"]*)"[^>]*>.*?<\/a>/g, '$1')
-    .replace(/&(lt|gt|amp|quot);/g, (m) => r2c[m]);
+    .replace(/&(lt|gt|amp);/g, (m) => r2c[m]);
 
   // クリップボードにコピーする
   navigator.clipboard.writeText(raw_text)

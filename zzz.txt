@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>なんでもメモ</title>
+<link rel="stylesheet" type="text/css" href="../lib/memo-style.css">
+<script src="../lib/memo-script.js"></script>
+</head>
+<body>
+<div id="main">
+  <h1>なんでもメモ</h1>
+  <form class="article" method="post" action="memo.py">
+    <textarea name="text" placeholder="投稿文..." required></textarea>
+    <button type="submit">投稿する</button>
+  </form>
+  <form class="search" method="get" action="memo.py">
+    <input type="text" name="q" placeholder="検索ワード..." required value="">
+    <button type="submit">検索する</button>
+  </form>
+
+  <form class="view" method="post" action="memo.py">
+    <div class="header">
+      <span class="date">2026-03-23(月) 14:27</span>
+      <input type="hidden" name="del" value="19">
+      <button class="del" type="submit">削除</button>
+      <button class="copy" type="button">テキストをコピー</button>
+    </div>
+    <div class="text">自動リンク処理のテスト
+
+javascript:alert('XSS')
+     javascript:alert(1)
+data:text/html;base64,PHNjcmlwdD5hbGVydCgnWFNTJyk8L3NjcmlwdD4=
+&lt;a href="&amp;quot;"&gt;</div>
+  </form>
+  <form class="view" method="post" action="memo.py">
+    <div class="header">
+      <span class="date">2026-03-22(日) 09:30</span>
+      <input type="hidden" name="del" value="6">
+      <button class="del" type="submit">削除</button>
+      <button class="copy" type="button">テキストをコピー</button>
+    </div>
+    <div class="text">なんでもメモして[投稿する]ボタンを押してください。
+そのままSQLiteのDBに保存します。
+
+* 投稿記事は新しい順に **全部** 表示します
+* [検索する]で記事を絞り込めます
+* 不用な記事は[削除]できます
+* 修正は[テキストをコピー]し、投稿ボックスに貼り、書き換えて再投稿します
+* ブラウザのダークモードに対応しています</div>
+  </form>
+  <form class="view" method="post" action="memo.py">
+    <div class="header">
+      <span class="date">2026-03-22(日) 09:30</span>
+      <input type="hidden" name="del" value="5">
+      <button class="del" type="submit">削除</button>
+      <button class="copy" type="button">テキストをコピー</button>
+    </div>
+    <div class="text">投稿のテストです。</div>
+  </form>
+
+</div>
+</body>
+</html>

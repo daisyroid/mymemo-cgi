@@ -51,13 +51,13 @@ def linkifyAndEscape(text):
                 link_text = urllib.parse.unquote(text_piece)
             except Exception:
                 link_text = text_piece
-            safe_url = html.escape(text_piece) # quote=True
-            safe_link_text = html.escape(link_text, quote=False)
+            safe_url = html.escape(text_piece)
+            safe_link_text = html.escape(link_text)
             stack.append(
                 f'<a href="{safe_url}" target="_blank" rel="noreferrer">{safe_link_text}</a>'
             )
         else:
-            safe_text = html.escape(text_piece, quote=False)
+            safe_text = html.escape(text_piece)
             stack.append(safe_text)
 
     return "".join(stack)
@@ -110,48 +110,40 @@ DB_LOCK = threading.Lock()
 def getPostData():
     post_data = []
     error_message = ""
-    with DB_LOCK:
-        try:
-            # DB接続（なければ作成）
-            conn = sqlite3.connect(DB_FILE)
-            cursor = conn.cursor()
-            sql = """
-            CREATE TABLE IF NOT EXISTS posts (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                text TEXT NOT NULL,
-                created_at DATETIME DEFAULT (DATETIME('now', 'localtime'))
-            )
-            """
-            cursor.execute(sql)
-            conn.commit()
-
-            # 投稿追加または削除
-            if TEXT != "":
-                sql = "INSERT INTO posts (text) VALUES (?)"
-                cursor.execute(sql, (TEXT,))
-                conn.commit()
-            elif DEL_ID != "":
-                sql = "DELETE FROM posts WHERE id = ?"
-                cursor.execute(sql, (DEL_ID,))
-                conn.commit()
-
-            # ワード検索または全文取得
-            if QUERY != "":
-                sql = "SELECT * FROM posts WHERE text LIKE ? ORDER BY id DESC"
-                cursor.execute(sql, (f"%{QUERY}%",))
-                conn.commit()
-                post_data = cursor.fetchall()
-            else:
-                sql = "SELECT * FROM posts ORDER BY id DESC"
+    try:
+        with DB_LOCK:
+            with sqlite3.connect(DB_FILE) as conn:
+                # DB接続（なければ作成）
+                cursor = conn.cursor()
+                sql = """
+                CREATE TABLE IF NOT EXISTS posts (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    text TEXT NOT NULL,
+                    created_at DATETIME DEFAULT (DATETIME('now', 'localtime'))
+                )
+                """
                 cursor.execute(sql)
+
+                # 投稿追加または削除
+                if TEXT != "":
+                    sql = "INSERT INTO posts (text) VALUES (?)"
+                    cursor.execute(sql, (TEXT,))
+                elif DEL_ID != "":
+                    sql = "DELETE FROM posts WHERE id = ?"
+                    cursor.execute(sql, (DEL_ID,))
                 conn.commit()
+
+                # ワード検索または全文取得
+                if QUERY != "":
+                    sql = "SELECT * FROM posts WHERE text LIKE ? ORDER BY id DESC"
+                    cursor.execute(sql, (f"%{QUERY}%",))
+                else:
+                    sql = "SELECT * FROM posts ORDER BY id DESC"
+                    cursor.execute(sql)
                 post_data = cursor.fetchall()
 
-        except sqlite3.Error as e:
-            error_message = f"ERROR: {e}"
-
-        finally:
-            conn.close()
+    except sqlite3.Error as e:
+        error_message = f"ERROR: {e}"
 
     return post_data, error_message
 
@@ -165,7 +157,7 @@ def makeTimeLine(data):
 
     for ID, text, created_at in data:
         safe_text = linkifyAndEscape(text)
-        datetime_str = getDateTimeStr(created_at)
+        datetime_str = html.escape(getDateTimeStr(created_at))
         timeline += (
             f'  <form class="view" method="post" action="{MY_NAME}">\n'
             f'    <div class="header">\n'
@@ -209,17 +201,17 @@ def makeReloader():
     reload_snippet = "location.href=location.pathname;"
 
     if METHOD == "GET":
-        # GETを処理した場合はリロード不用
+        # GETを処理した場合はリロードする必要なし
         js = ""
         button = ""
 
     elif SYSTEM_MESSAGE == "":
-        # POSTを処理してノーエラーの場合、JavaScriptで強制リロード
+        # POSTを処理して、ノーエラーの場合、JavaScriptで強制リロード
         js = f"<script>{reload_snippet}</script>"
         button = ""
 
     else:
-        # POSTを処理してエラーがあった場合、リロードボタンを表示
+        # POSTを処理して、エラーメッセージを出す場合、リロードボタンを付加
         js = ""
         button = f' <button type="button" onclick="{reload_snippet}">リロード</button>'
 
@@ -229,16 +221,11 @@ def makeReloader():
 RELOAD_JS, RELOAD_BUTTON = makeReloader()
 
 
-# 入力されたデータを表示用にエスケープする
+# フォームから送信されたデータは表示前にエスケープする
 SAFE_QUERY = html.escape(QUERY)
-SAFE_TEXT = html.escape(TEXT)
 
-
-# HTTPレスポンスを出力する
-print(
-    f"""
-Content-Type: text/html; charset=utf-8
-
+# 出力するページのHTMLを作る
+OUTPUT_HTML = f"""
 <!DOCTYPE html>
 <html lang="ja">
 <head>{RELOAD_JS}
@@ -265,4 +252,27 @@ Content-Type: text/html; charset=utf-8
 </body>
 </html>
 """.strip()
-)
+
+
+# HTTPレスポンス(ヘッダー,空行,コンテンツ)を出力する
+def outputResponse(contents):
+    # contentsをバイナリに変換することで、
+    # 改行コードの自動変換の影響を排除してバイト数を得る
+    bin_contents = contents.encode("utf-8")
+    length = len(bin_contents)
+
+    # HTTPヘッダーの改行コードは"\r\n"と定められている
+    # WindowsでもLinuxでも"\r\n"にするためバイナリで出力する
+    bin_headers = (
+        f"Content-Type: text/html; charset=utf-8\r\n"  # Type
+        f"Content-Length: {length}\r\n"  # Length
+        "\r\n"  # 空行
+    ).encode("utf-8")
+
+    # 標準出力にバイナリとして書き込む
+    sys.stdout.buffer.write(bin_headers)
+    sys.stdout.buffer.write(bin_contents)
+    sys.stdout.buffer.flush()
+
+
+outputResponse(OUTPUT_HTML)
