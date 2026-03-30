@@ -24,9 +24,12 @@ class MyCGIHandler(http.server.CGIHTTPRequestHandler):
         else:
             return super().is_cgi()
 
-# HTTPServerとThreadingMixInを継承してThreadedHTTPServerクラスを作る 
+
+# HTTPServerとThreadingMixInを継承してThreadedHTTPServerクラスを作る
 class ThreadedHTTPServer(socketserver.ThreadingMixIn, http.server.HTTPServer):
-    pass
+    # (host, port)が既に使われていたらエラーにする
+    allow_reuse_address = False
+
 
 # MyCGIHandlerが作られるたびにドキュメントルートを設定する
 myhandler = functools.partial(MyCGIHandler, directory=DOC_ROOT)
@@ -37,7 +40,22 @@ os.environ["DOCUMENT_ROOT"] = DOC_ROOT
 # サーバーを起動する
 host = "localhost"
 port = 8000
-myserver = ThreadedHTTPServer((host, port), myhandler)
 
-print(f"start: http://{host}:{port}")
-myserver.serve_forever()
+try:
+    myserver = ThreadedHTTPServer((host, port), myhandler)
+    print(f"start: http://{host}:{port}")
+    myserver.serve_forever()
+
+except KeyboardInterrupt:
+    # [Ctrl]+[C]で中断
+    print(f"\nshutdown...")
+    myserver.server_close()
+
+except OSError as e:
+    import errno
+
+    if e.errno == errno.EADDRINUSE:
+        # アドレス(host, port)が既に使われていた
+        print(f"ERROR: {host}:{port} is in use")
+    else:
+        print(e)
