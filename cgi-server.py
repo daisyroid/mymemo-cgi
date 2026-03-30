@@ -48,7 +48,7 @@ try:
 
 except KeyboardInterrupt:
     # [Ctrl]+[C]で中断
-    print(f"\nshutdown...")
+    print("\nshutdown...")
     myserver.server_close()
 
 except OSError as e:
