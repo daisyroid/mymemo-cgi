@@ -1,0 +1,13 @@
+[tool.ruff]
+# チェックするルールの種類を指定
+lint.select = [
+    "E",   # Pycodestyle (基本ルール)
+    "F",   # Pyflakes (未使用変数や再定義のチェック)
+    "UP",  # pyupgrade (最新のPython構文への修正)
+    "N",   # pep8-naming (命名規則のチェック: 大文字小文字など)
+    "TCH", # type-checking (型ヒントに関するルール)
+]
+
+#[tool.ruff.lint.pep8-naming]
+## 定数として扱う変数の命名規則をカスタマイズ（オプション）
+#const-naming-style = "UPPER_CASE"

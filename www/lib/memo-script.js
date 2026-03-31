@@ -1,3 +1,10 @@
+// ページサイズを変更して現在のページをリロードする
+function setPageSize(n) {
+    params = new URLSearchParams(location.search);
+    params.set("n", n);
+    location.href = location.pathname + '?' + params.toString()
+}
+
 // [コピー]ボタンを押したときの処理
 function onClick(ev) {
   // ボタンの親フォームに属するdiv.textが記事本体
