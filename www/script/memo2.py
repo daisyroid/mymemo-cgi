@@ -3,7 +3,6 @@
 import cgi
 import datetime
 import html
-import http.cookies
 import os
 import re
 import sqlite3
