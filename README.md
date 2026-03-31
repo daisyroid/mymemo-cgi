@@ -7,6 +7,7 @@ http.serverとcgiで作った「なんでもメモ」CGIスクリプト
 * www/
   * script/
     * [memo.py](www/script/memo.py) -- なんでもメモ
+    * [memo2.py](www/script/memo2.py) -- なんでもメモv2
   * lib/
     * [memo-style.css](www/lib/memo-style.css) -- スタイルファイル
     * [memo-script.js](www/lib/memo-script.js) -- JavaScriptファイル
