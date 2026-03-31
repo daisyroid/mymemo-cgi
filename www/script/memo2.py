@@ -139,7 +139,9 @@ DB_LOCK = threading.Lock()
 
 
 def getPostData():
-    post_data = []
+    data = []
+    more_b = 0
+    mora_a = 0
     error_message = ""
     try:
         with DB_LOCK:
