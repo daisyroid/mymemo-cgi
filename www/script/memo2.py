@@ -106,7 +106,8 @@ DEFAULT_LIMIT = 10
 def getFormData():
     form = cgi.FieldStorage()
     query = form.getfirst("q", "").strip()
-    delid = form.getfirst("del", "").strip()
+    del_id = form.getfirst("del", "").strip()
+    del_id = getInt(del_id, 0)
     text = form.getfirst("text", "").strip()
     text = "\n".join(text.splitlines())  # 改行コードを"\n"に統一
 
@@ -125,7 +126,7 @@ def getFormData():
     limit = form.getfirst("n", "").strip()
     limit = max(1, getInt(limit, DEFAULT_LIMIT))
 
-    return query, delid, text, after, before, limit
+    return query, del_id, text, after, before, limit
 
 
 QUERY, DEL_ID, TEXT, AFTER, BEFORE, LIMIT = getFormData()
@@ -161,7 +162,7 @@ def getPostData():
                 if TEXT != "":
                     sql = "INSERT INTO posts (text) VALUES (?)"
                     cursor.execute(sql, (TEXT,))
-                elif DEL_ID != "":
+                elif DEL_ID != 0:
                     sql = "DELETE FROM posts WHERE id = ?"
                     cursor.execute(sql, (DEL_ID,))
                 conn.commit()
