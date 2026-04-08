@@ -56,7 +56,7 @@ textarea {
   padding: 6px;
 }
 
-input, select {
+input {
   font-size: 10pt;
   color: var(--text-color);
   background-color: var(--paper-color);
@@ -65,13 +65,13 @@ input, select {
   padding: 6px;
 }
 
-button {
+button, select {
   font-size: 9pt;
   color: var(--text-color);
   background-color: var(--gray-color);
   border: 1px solid var(--border-color);
   border-radius: 8px;
-  padding: 2px 6px;
+  padding: 2px 6px 3px 6px;
 }
 
 button:active {
@@ -93,12 +93,11 @@ button:active {
   display: flex;
   gap: 6px;
   margin-bottom: 12px;
+  height: 28px;
 }
 
 .article .panel select.pagesize {
   margin-left: auto;
-  color: var(--text-color);
-  background-color: var(--gray-color);
 }
 
 /* ========== 検索フォーム ========== */
